@@ -20,7 +20,7 @@ author: H-J-Granger, orzAtalod, ksyx, Ir1d, Chrogeek, Enter-tainer, yiyangit
 
         ```cpp
         // query 为返回 long long 类型的自定义函数
-        printf("%lld\n", max(0, query(1, 1, n, l, r));
+        printf("%lld\n", max(0, query(1, 1, n, l, r)));
 
         //错误    没有与参数列表匹配的 重载函数 "std::max" 实例
         ```
