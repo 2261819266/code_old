@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cstdio>
 #include <vector>
 #include <stack>
@@ -138,19 +139,87 @@ void solve(std::vector<bool> valhad, int optnum = 1, RegularExpression now = {})
 	}
 }
 
+bool solve_for_one_answer(std::vector<bool> valhad, int optnum = 1, RegularExpression now = {}) {
+	if (optnum == val.size()) {
+		double x = now.calculation();
+		if (std::fabs(now.calculation() - goal) < mis) {
+			now.print();
+			return true;
+		}
+		return false;
+	}
+
+	bool k = false;
+	
+	for (int i = 0; i < val.size(); i++) {
+		if (!valhad[i]) {
+			valhad[i] = true;
+			now.push(val[i]);
+			k = solve_for_one_answer(valhad, optnum, now);
+			now.pop();
+			valhad[i] = false;
+			if (k) return true;
+		}
+	}
+
+	for (int i = 0; i < opt.size(); i++) {
+		now.push(opt[i]);
+		k = solve_for_one_answer(valhad, optnum + 1, now);
+		now.pop();
+		if (k) return true;
+	}
+	return false;
+}
+
+void search_for_answer_of_all_input() {
+	int minx = 1, maxx = 4;
+	scanf("%d%d", &minx, &maxx);
+	int times = 0, all_times = 0, times_2 = 0;
+	std::vector<bool> sv(4, false);
+	for (int i = minx; i <= maxx; i++) {
+		val[0] = i;
+		for (int j = i; j <= maxx; j++) {
+			val[1] = j;
+			for (int k = j; k <= maxx; k++) {
+				val[2] = k;
+				for (int l = k; l <= maxx; l++) {
+					sv.assign(4, false);
+					val[3] = l;
+					int x = solve_for_one_answer(sv);
+					times += x;
+					all_times++;
+					std::vector<int> ti(maxx + 1, 0);
+					{
+						ti[i]++,ti[j]++,ti[k]++,ti[l]++;
+						std::sort(ti.begin(), ti.end(), [](int _x, int _y) { return _x > _y; });
+						if (ti[0] == 3) x *= 4;
+						if (ti[1] == 2) x *= 6;
+						if (ti[0] == 2 && ti[1] == 1) x *= 12;
+						if (ti[0] == 1) x *= 24;
+						times_2 += x;
+					}
+				}
+			}
+		}
+	}
+	printf("%.3lf%% %.3lf%%\n", times * 100.0 / all_times, times_2 * 100.0 / pow(maxx - minx + 1, 4));
+}
+
 void solve_math() {
 	for (int i = 0; i < 4; i++) {
 		scanf("%lf", &val[i]);
 	}
 	std::vector<bool> sv(4, false);
-	solve(sv);
+	// solve(sv);
+	solve_for_one_answer(sv);
 }
 
 bool Ed;
 
 int main() {
 	std::cerr << (double)std::abs(&Ed - &St) / 1024.0 / 1024.0 << "Mb\n";
-	solve_math();
+	// solve_math();
+	search_for_answer_of_all_input();
 	std::cerr << "\n" << double(clock()) / CLOCKS_PER_SEC << "s\n";
 	return 0;
 }
