@@ -1,45 +1,44 @@
 #include <cstdio>
-#include <cstring>
-#include <algorithm>
+#include <vector>
 
-const int maxn = 1000;
-int to[maxn * 10], next[maxn * 10], head[maxn], t = 0, now[maxn];
+const int maxn = 305;
 
-void addedge(int u, int v) {
-    to[u] = v;
-    next[u] = head[u];
-    head[u] = t++;
+std::vector<int> e[maxn], s[maxn], d;
+
+void addEdge(int u, int v) {
+    e[u].push_back(v);
+    e[v].push_back(u);
 }
 
-int f(int x) {
-    if (now[x]) return 0;
-    int ans = maxn, j = 0;
-    now[x] = 1;
-    for (int i = head[x]; ~i; i = next[i], j++) {
-        int ans_ = 0;
-        now[i] = 1;
-        for (int k = head[x]; ~k; k = next[k]) {
-            if (k - i) ans_ += f(to[k]);
+void build(int u = 1) { 
+    for (int v : e[u]) {
+        if (!d[v] && v > 1) {
+            d[v] = d[u] + 1;
+            s[u].push_back(v);
+            build(v);
         }
-        now[i] = 0;
-        ans = std::min(ans, ans_);
     }
-    now[x] = 0;
-    return ans + j - 1;
+}
+
+int dfs(int u = 1) {
+    int mx = 0, sum = 0;
+    for (int v : s[u]) {
+        int x = dfs(v);
+        sum += x;
+        mx = std::max(mx, x);
+    }
+    return sum - mx + 1;
 }
 
 int main() {
-#ifdef LOCAL
-    LOCALfo
-#endif
     int n, m;
-    memset(head, -1, sizeof(head));
     scanf("%d%d", &n, &m);
+    d.assign(n + 1, 0);
     for (int i = 0; i < m; i++) {
         int u, v;
         scanf("%d%d", &u, &v);
-        addedge(u, v);
-        addedge(v, u);
+        addEdge(u, v);
     }
-    printf("%d\n", f(1));
+    build();
+    printf("%d\n", dfs(1));
 }

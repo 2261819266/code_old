@@ -1,79 +1,79 @@
 #include <cstdio>
-#include <algorithm>
-#include <cstring>
-#include <queue>
 #include <string>
-#define f(x, y, z) for (int x = y, __ = z; x < __; ++x)
+#include <queue>
+#include <iostream>
 
-const int maxn = 2e5 + 8, maxm = 2e6 + 8;
+using std::string;
+const int maxn = 2e5 + 8;
 
-struct ACAutomata {
-#define word (s[i] - 'a')
+class ACAutomaton {
+#define word (i - 'a')
 #define pw a[p][word]
-#define pi a[p][i]
-    int a[maxn][26], v[maxn], fail[maxn], cnt, t[maxn];
-    void insert(const char *s) {
-        int p = 0;
-        f(i, 0, strlen(s)) {
+    static const int root = 0;
+public:
+    int a[maxn][26] = {}, b[maxn] = {}, f[maxn], cnt = root, t[maxn] = {};
+    string str[maxn];
+    void insert(const string &s) {
+        int p = root;
+        for (int i : s) {
             if (!pw) pw = ++cnt;
             p = pw;
         }
-        v[p]++;
+        b[p]++;
+        str[p] = s;
     }
 
     void build() {
         std::queue<int> q;
-        f(i, 0, 26) {
-            if (a[0][i]) q.push(a[0][i]);
+        for (int i = 0; i < 26; i++) {
+            if (a[root][i]) {
+                f[a[root][i]] = root;
+                q.push(a[root][i]);
+            }
         }
         while (!q.empty()) {
-            int p = q.front();
+            int u = q.front();
             q.pop();
-            f(i, 0, 26) {
-                if (pi) fail[pi] = a[fail[p]][i], q.push(pi);
-                else pi = a[fail[p]][i];
+            for (int i = 0; i < 26; i++) {
+                if (a[u][i]) {
+                    f[a[u][i]] = a[f[u]][i];
+                    q.push(a[u][i]);
+                } else a[u][i] = a[f[u]][i];
             }
         }
     }
 
-    void query(const char *s) {
-        int p = 0;
-        f(i, 0, strlen(s)) {
+    void query(const string &s, std::vector<string> ss) {
+        int p = root;
+        for (int i : s) {
             p = pw;
-            for (int j = p; j; j = fail[j]) {
-                t[j] += v[j] > 0;
-                if (!v[fail[p]]) fail[p] = fail[fail[p]];
+            for (int j = p; j - root; j = f[j]) {
+                if (b[j]) t[j]++;
+                if (!b[f[p]]) f[p] = f[f[p]];
             }
         }
-    }
-
-    void print(const char *s) {
-        int p = 0;
-        f(i, 0, strlen(s)) {
-            p = pw;
+        for (string j : ss) {
+            p = root;
+            for (int i : j) {
+                p = pw;
+            }
+            std::cout << t[p] << std::endl;
         }
-        printf("%d\n", t[p]);
     }
-} AC;
+} a;
 
-std::string t[maxn];
-char s[maxm];
+std::vector<string> s;
 
 int main() {
-#ifdef LOCAL    
-    LOCALfo
-#endif
     int n;
+    string str;
     scanf("%d", &n);
-    f(i, 0, n) {
-        scanf("%s", s);
-        t[i] = s;
-        AC.insert(s);
+    for (int i = 0; i < n; i++) {
+        std::cin >> str;
+        s.push_back(str);
+        a.insert(s[i]);
     }
-    scanf("%s", s);
-    AC.build(), AC.query(s);
-    
-    f(i, 0, n) { 
-        AC.print(t[i].c_str());
-    }
+    a.build();
+    std::cin >> str;
+    a.query(str, s);
 }
